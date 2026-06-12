@@ -1,4 +1,14 @@
-// Chat uses SSE (Server-Sent Events) — not axios
+/**
+ * SSE streaming chat client.
+ *
+ * Backend SSE format (per event):
+ *   event: <type>\n
+ *   data: <payload>\n
+ *   \n                   ← blank line ends the message
+ *
+ * Multi-line data (e.g. newlines inside a token) follow the SSE spec:
+ * multiple "data:" lines are joined with \n before dispatching.
+ */
 declare global {
   interface Window { __ROOT_PATH__: string }
 }
@@ -6,16 +16,48 @@ declare global {
 const rootPath = () => window.__ROOT_PATH__ || ''
 
 export interface ChatStreamCallbacks {
-  onMeta?: (conversationId: number, ragUsed: boolean) => void
+  onMeta?: (conversationId: number, ragActive: boolean) => void
   onToken: (token: string) => void
   onFileReady?: (filename: string, url: string, label: string) => void
   onError?: (msg: string) => void
   onDone?: () => void
 }
 
+function dispatch(
+  event: string,
+  data: string,
+  callbacks: ChatStreamCallbacks,
+) {
+  switch (event) {
+    case 'meta': {
+      try {
+        const meta = JSON.parse(data)
+        callbacks.onMeta?.(meta.conversation_id, meta.rag_active)
+      } catch { /* ignore malformed */ }
+      break
+    }
+    case 'token':
+      if (data) callbacks.onToken(data)
+      break
+    case 'file_ready': {
+      try {
+        const f = JSON.parse(data)
+        const url = `${rootPath()}/files/${encodeURIComponent(f.filename)}`
+        callbacks.onFileReady?.(f.filename, url, f.formato ?? f.filename)
+      } catch { /* ignore */ }
+      break
+    }
+    case 'error':
+      callbacks.onError?.(data)
+      break
+    case 'done':
+      callbacks.onDone?.()
+      break
+  }
+}
+
 /**
- * Opens an SSE stream to POST /projects/{projectId}/chat
- * Returns a cleanup function that closes the connection.
+ * Opens a POST+SSE stream. Returns an abort function.
  */
 export function streamChat(
   projectId: number,
@@ -24,8 +66,6 @@ export function streamChat(
   callbacks: ChatStreamCallbacks,
 ): () => void {
   const url = `${rootPath()}/projects/${projectId}/chat`
-
-  // SSE requires GET, but our API is POST+SSE via fetch streaming
   const controller = new AbortController()
 
   fetch(url, {
@@ -39,44 +79,50 @@ export function streamChat(
         callbacks.onError?.(`HTTP ${res.status}`)
         return
       }
+
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
+      let currentEvent = ''
+      let currentDataLines: string[] = []
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
+
         buffer += decoder.decode(value, { stream: true })
+
+        // Work through complete lines; leave the last incomplete one in buffer
         const lines = buffer.split('\n')
         buffer = lines.pop() ?? ''
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const payload = JSON.parse(line.slice(6))
-              switch (payload.type) {
-                case 'meta':
-                  callbacks.onMeta?.(payload.conversation_id, payload.rag_used)
-                  break
-                case 'token':
-                  callbacks.onToken(payload.content)
-                  break
-                case 'file_ready':
-                  callbacks.onFileReady?.(payload.filename, payload.url, payload.label)
-                  break
-                case 'error':
-                  callbacks.onError?.(payload.content)
-                  break
-                case 'done':
-                  callbacks.onDone?.()
-                  break
-              }
-            } catch {
-              // ignore malformed lines
+        for (const rawLine of lines) {
+          // Strip carriage return if server sends \r\n
+          const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
+
+          if (line.startsWith('event: ')) {
+            currentEvent = line.slice(7).trim()
+          } else if (line.startsWith('data: ')) {
+            // SSE spec: accumulate multiple data: lines with \n between them
+            currentDataLines.push(line.slice(6))
+          } else if (line === '') {
+            // Blank line → dispatch accumulated event, then reset
+            if (currentEvent) {
+              const data = currentDataLines.join('\n')
+              dispatch(currentEvent, data, callbacks)
             }
+            currentEvent = ''
+            currentDataLines = []
           }
+          // Lines starting with ':' are SSE comments — ignore
         }
       }
+
+      // Stream ended — dispatch any pending buffered event
+      if (currentEvent && currentDataLines.length > 0) {
+        dispatch(currentEvent, currentDataLines.join('\n'), callbacks)
+      }
+
       callbacks.onDone?.()
     })
     .catch((err) => {

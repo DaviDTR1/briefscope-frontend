@@ -6,11 +6,17 @@ export const getConversations = async (projectId: number): Promise<Conversation[
   return data
 }
 
-export const getConversation = async (convId: number): Promise<ConversationDetail> => {
-  const { data } = await api.get(`/conversations/${convId}`)
+export const getConversation = async (
+  projectId: number,
+  convId: number,
+): Promise<ConversationDetail> => {
+  const { data } = await api.get(`/projects/${projectId}/conversations/${convId}`)
   return data
 }
 
-export const deleteConversation = async (convId: number): Promise<void> => {
-  await api.delete(`/conversations/${convId}`)
+export const deleteConversation = async (
+  projectId: number,
+  convId: number,
+): Promise<void> => {
+  await api.delete(`/projects/${projectId}/conversations/${convId}`)
 }

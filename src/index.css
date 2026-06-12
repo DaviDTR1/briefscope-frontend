@@ -66,3 +66,23 @@ button { font-family: inherit; cursor: pointer; }
 
 .animate-fade-up { animation: fadeUp 0.2s cubic-bezier(0.16,1,0.3,1) both; }
 .animate-spin-queai { animation: spin 0.7s linear infinite; }
+
+/* ── Radix animation utilities (used by Dialog / Select) ─────────────── */
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes zoomIn  { from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes zoomOut { from { opacity: 1; transform: translate(-50%, -50%) scale(1); } to { opacity: 0; transform: translate(-50%, -50%) scale(0.96); } }
+
+.data-\[state\=open\]\:animate-in[data-state=open]    { animation-fill-mode: both; animation-duration: 150ms; }
+.data-\[state\=closed\]\:animate-out[data-state=closed] { animation-fill-mode: both; animation-duration: 100ms; }
+.data-\[state\=open\]\:fade-in-0[data-state=open]    { animation-name: fadeIn; }
+.data-\[state\=closed\]\:fade-out-0[data-state=closed] { animation-name: fadeOut; }
+.data-\[state\=open\]\:zoom-in-95[data-state=open]   { animation-name: zoomIn; }
+.data-\[state\=closed\]\:zoom-out-95[data-state=closed] { animation-name: zoomOut; }
+
+/* Select content slide animations */
+@keyframes slideFromTop    { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideFromBottom { from { opacity: 0; transform: translateY(4px); }  to { opacity: 1; transform: translateY(0); } }
+.data-\[side\=bottom\]\:slide-in-from-top-2[data-side=bottom]    { animation-name: slideFromTop; animation-duration: 150ms; animation-fill-mode: both; }
+.data-\[side\=top\]\:slide-in-from-bottom-2[data-side=top]       { animation-name: slideFromBottom; animation-duration: 150ms; animation-fill-mode: both; }
+

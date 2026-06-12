@@ -1,26 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useConfig, useUpdateConfig } from '../../hooks/useConfig'
 import { getOllamaModels } from '../../api/config'
-
-const inputStyle = {
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  color: 'var(--text)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '7px 12px',
-  fontSize: 13.5,
-  fontFamily: "'DM Sans', sans-serif",
-  width: '100%',
-}
-
-const labelStyle = {
-  display: 'block',
-  fontSize: 12,
-  color: 'var(--text-dim)',
-  marginBottom: 6,
-  fontFamily: "'DM Mono', monospace",
-  letterSpacing: '0.04em' as const,
-}
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
+import { SimpleSelect } from '../ui/select'
 
 export default function LocalSettings() {
   const { data: config } = useConfig()
@@ -51,78 +35,53 @@ export default function LocalSettings() {
     <div className="flex flex-col gap-5">
       {/* Ollama host */}
       <div>
-        <label style={labelStyle}>OLLAMA HOST</label>
+        <Label>Ollama Host</Label>
         <div className="flex gap-2">
-          <input
+          <Input
             value={ollamaHost}
             onChange={(e) => setOllamaHost(e.target.value)}
-            style={{ ...inputStyle, width: 'auto', flex: 1, fontFamily: "'DM Mono', monospace", fontSize: 13 }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'var(--text-dim)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            className="flex-1 w-auto font-mono text-[13px]"
           />
-          <button
+          <Button
+            variant="outline"
+            className="shrink-0"
             onClick={() => update.mutate({ ollama_host: ollamaHost })}
-            className="shrink-0 transition-colors"
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--border)',
-              color: 'var(--text-muted)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '7px 16px',
-              fontSize: 13.5,
-              fontFamily: 'inherit',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
           >
             Guardar
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Model */}
       <div>
-        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-          <label style={{ ...labelStyle, marginBottom: 0 }}>MODELO ACTIVO</label>
-          <button
-            onClick={fetchModels}
+        <div className="flex items-center justify-between mb-1.5">
+          <Label className="mb-0">Modelo Activo</Label>
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={loadingModels}
-            style={{
-              fontSize: 11,
-              color: loadingModels ? 'var(--text-dim)' : 'var(--text-muted)',
-              background: 'none',
-              border: 'none',
-              fontFamily: "'DM Mono', monospace",
-              cursor: loadingModels ? 'wait' : 'pointer',
-              letterSpacing: '0.02em',
-            }}
-            onMouseEnter={e => { if (!loadingModels) e.currentTarget.style.color = 'var(--text)' }}
-            onMouseLeave={e => (e.currentTarget.style.color = loadingModels ? 'var(--text-dim)' : 'var(--text-muted)')}
+            onClick={fetchModels}
+            className="font-mono text-[11px] px-0 h-auto"
           >
             {loadingModels ? 'Cargando…' : '↻ Actualizar'}
-          </button>
+          </Button>
         </div>
 
         {models.length > 0 ? (
-          <select
-            value={config.ollama_model}
-            onChange={(e) => update.mutate({ ollama_model: e.target.value })}
-            style={inputStyle}
-          >
-            {models.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
+          <SimpleSelect
+            value={config.ollama_model ?? ''}
+            onValueChange={(val) => update.mutate({ ollama_model: val })}
+            options={models.map((m) => ({ value: m }))}
+          />
         ) : (
-          <input
+          <Input
             value={config.ollama_model ?? ''}
             onChange={(e) => update.mutate({ ollama_model: e.target.value })}
             placeholder="llama3.2"
-            style={{ ...inputStyle, fontFamily: "'DM Mono', monospace", fontSize: 13 }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'var(--text-dim)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            className="font-mono text-[13px]"
           />
         )}
-        <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6, fontFamily: "'DM Mono', monospace" }}>
+        <p className="mt-1.5 text-[11px] font-mono text-text-dim">
           El modelo se descarga automáticamente si no está instalado.
         </p>
       </div>

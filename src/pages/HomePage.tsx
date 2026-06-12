@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProjects, useCreateProject } from '../hooks/useProjects'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog'
 
 export default function HomePage() {
   const { data: projects = [], isLoading } = useProjects()
@@ -18,192 +27,91 @@ export default function HomePage() {
     navigate(`/projects/${proj.id}`)
   }
 
+  const closeModal = () => { setCreating(false); setNewName('') }
+
   const isEmpty = !isLoading && projects.length === 0
 
   return (
-    <div className="flex-1 overflow-y-auto animate-fade-up" style={{ position: 'relative' }}>
-      {/* Empty state */}
+    <div className="flex-1 overflow-y-auto animate-fade-up relative">
+      {/* ── Empty state ──────────────────────────────────────────────── */}
       {isEmpty && (
-        <div
-          className="flex flex-col items-center justify-center"
-          style={{ minHeight: '100%', padding: '0 24px' }}
-        >
-          <div style={{ textAlign: 'center', maxWidth: 380 }}>
-            <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.5 }}>📁</div>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.3px', marginBottom: 8 }}>
+        <div className="flex flex-col items-center justify-center min-h-full px-6">
+          <div className="text-center max-w-[380px]">
+            <div className="text-[40px] mb-4 opacity-50">📁</div>
+            <h2 className="text-[18px] font-semibold text-text tracking-[-0.3px] mb-2">
               Sin proyectos todavía
             </h2>
-            <p style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 28 }}>
+            <p className="text-[13px] text-text-dim mb-7">
               Crea tu primer proyecto para comenzar a analizar documentos.
             </p>
 
             {creating ? (
-              <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <input
+              <form onSubmit={handleCreate} className="flex flex-col gap-2.5">
+                <Input
                   autoFocus
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Nombre del proyecto…"
-                  style={{
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '10px 14px',
-                    fontSize: 14,
-                    fontFamily: 'inherit',
-                    width: '100%',
-                    outline: 'none',
-                    textAlign: 'center',
-                  }}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--text-dim)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                  className="text-center text-[14px] py-2.5"
                 />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    type="submit"
-                    disabled={!newName.trim() || createProject.isPending}
-                    style={{
-                      flex: 1,
-                      background: 'var(--accent)',
-                      border: 'none',
-                      color: '#fff',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '9px 0',
-                      fontSize: 13.5,
-                      fontFamily: 'inherit',
-                      fontWeight: 500,
-                      cursor: !newName.trim() ? 'not-allowed' : 'pointer',
-                      opacity: !newName.trim() ? 0.5 : 1,
-                    }}
-                  >
+                <div className="flex gap-2">
+                  <Button type="submit" size="full" disabled={!newName.trim() || createProject.isPending}>
                     {createProject.isPending ? 'Creando…' : 'Crear proyecto'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="full"
                     onClick={() => { setCreating(false); setNewName('') }}
-                    style={{
-                      flex: 1,
-                      background: 'transparent',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-muted)',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '9px 0',
-                      fontSize: 13.5,
-                      fontFamily: 'inherit',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--text-dim)')}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                   >
                     Cancelar
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
-              <button
-                onClick={() => setCreating(true)}
-                style={{
-                  background: 'var(--accent)',
-                  border: 'none',
-                  color: '#fff',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 28px',
-                  fontSize: 14,
-                  fontFamily: 'inherit',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-              >
+              <Button size="lg" onClick={() => setCreating(true)}>
                 + Nuevo proyecto
-              </button>
+              </Button>
             )}
           </div>
         </div>
       )}
 
-      {/* Project list */}
+      {/* ── Project list ─────────────────────────────────────────────── */}
       {!isEmpty && (
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 24px' }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 24 }}>
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.3px' }}>
-                Proyectos
-              </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 2 }}>
+              <h1 className="text-[20px] font-semibold text-text tracking-[-0.3px]">Proyectos</h1>
+              <p className="text-[13px] text-text-dim mt-0.5">
                 {projects.length} proyecto{projects.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <button
-              onClick={() => setCreating(true)}
-              style={{
-                background: 'transparent',
-                border: '1px solid var(--border)',
-                color: 'var(--text-muted)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '7px 16px',
-                fontSize: 13.5,
-                fontFamily: 'inherit',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--accent)'
-                e.currentTarget.style.color = 'var(--text)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--text-muted)'
-              }}
-            >
+            <Button variant="outline" onClick={() => setCreating(true)}>
               + Nuevo proyecto
-            </button>
+            </Button>
           </div>
 
-          {isLoading && (
-            <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>Cargando…</p>
-          )}
+          {isLoading && <p className="text-[13px] text-text-dim">Cargando…</p>}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {projects.map((p) => (
               <button
                 key={p.id}
                 onClick={() => navigate(`/projects/${p.id}`)}
-                className="text-left w-full"
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius)',
-                  padding: '14px 18px',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  transition: 'border-color 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = '#444')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                className="text-left w-full border border-border rounded-queai px-[18px] py-3.5 cursor-pointer transition-colors hover:border-[#444]"
+                style={{ background: 'var(--bg-card)', fontFamily: 'inherit' }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <h2 style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {p.name}
-                    </h2>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-[14px] font-medium text-text truncate">{p.name}</h2>
                     {p.description && (
-                      <p style={{
-                        fontSize: 13,
-                        color: 'var(--text-muted)',
-                        marginTop: 2,
-                        overflow: 'hidden',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}>
+                      <p className="text-[13px] text-text-muted mt-0.5 line-clamp-2">
                         {p.description}
                       </p>
                     )}
                   </div>
-                  <div style={{ textAlign: 'right', fontSize: 11, fontFamily: "'DM Mono', monospace", color: 'var(--text-dim)', flexShrink: 0 }}>
+                  <div className="text-right text-[11px] font-mono text-text-dim shrink-0">
                     <p>{p.document_count} doc{p.document_count !== 1 ? 's' : ''}</p>
                     <p>{(p.total_tokens / 1000).toFixed(0)}k tokens</p>
                   </div>
@@ -214,92 +122,31 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Modal: create project (when list is visible) */}
-      {creating && !isEmpty && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 50,
-            background: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-          onClick={() => { setCreating(false); setNewName('') }}
-        >
-          <div
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              padding: '28px 28px',
-              width: 380,
-              maxWidth: '90vw',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 18, letterSpacing: '-0.3px' }}>
-              Nuevo proyecto
-            </h2>
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <input
-                autoFocus
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Nombre del proyecto…"
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '9px 12px',
-                  fontSize: 14,
-                  fontFamily: 'inherit',
-                  width: '100%',
-                  outline: 'none',
-                }}
-                onFocus={e => (e.currentTarget.style.borderColor = 'var(--text-dim)')}
-                onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-              />
-              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                <button
-                  type="submit"
-                  disabled={!newName.trim() || createProject.isPending}
-                  style={{
-                    flex: 1,
-                    background: 'var(--accent)',
-                    border: 'none',
-                    color: '#fff',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '9px 0',
-                    fontSize: 13.5,
-                    fontFamily: 'inherit',
-                    fontWeight: 500,
-                    cursor: !newName.trim() ? 'not-allowed' : 'pointer',
-                    opacity: !newName.trim() ? 0.5 : 1,
-                  }}
-                >
-                  {createProject.isPending ? 'Creando…' : 'Crear'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setCreating(false); setNewName('') }}
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-muted)',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '9px 0',
-                    fontSize: 13.5,
-                    fontFamily: 'inherit',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ── New project modal (when list is visible) ──────────────────── */}
+      <Dialog open={creating && !isEmpty} onOpenChange={(open) => { if (!open) closeModal() }}>
+        <DialogContent showClose={false}>
+          <DialogHeader>
+            <DialogTitle>Nuevo proyecto</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate}>
+            <Input
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Nombre del proyecto…"
+              className="text-[14px] py-[9px] mb-1"
+            />
+            <DialogFooter>
+              <Button type="submit" size="full" disabled={!newName.trim() || createProject.isPending}>
+                {createProject.isPending ? 'Creando…' : 'Crear'}
+              </Button>
+              <Button type="button" variant="outline" size="full" onClick={closeModal}>
+                Cancelar
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
