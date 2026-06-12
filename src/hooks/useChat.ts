@@ -2,46 +2,78 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { streamChat } from '../api/chat'
 import { getConversations, getConversation } from '../api/conversations'
 
+export interface FileReady {
+  filename: string
+  url: string
+  label: string
+}
+
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
-  fileReady?: { filename: string; url: string; label: string }
+  filesReady?: FileReady[]
+}
+
+/** Parse "[Archivo generado: filename]" markers saved to DB back into filesReady. */
+function parseAssistantContent(content: string): { cleanContent: string; filesReady?: FileReady[] } {
+  const pattern = /\[Archivo generado:\s*([^\]]+)\]/g
+  const filesReady: FileReady[] = []
+
+  const cleanContent = content
+    .replace(pattern, (_, filename) => {
+      filename = filename.trim()
+      const ext = filename.split('.').pop()?.toUpperCase() ?? 'FILE'
+      filesReady.push({
+        filename,
+        url: `/files/${encodeURIComponent(filename)}`,
+        label: ext,
+      })
+      return ''
+    })
+    .trim()
+
+  return {
+    cleanContent,
+    filesReady: filesReady.length > 0 ? filesReady : undefined,
+  }
 }
 
 export function useChat(projectId: number) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [conversationId, setConversationId] = useState<number | undefined>()
   const [streaming, setStreaming] = useState(false)
+  const [thinkingMessage, setThinkingMessage] = useState<string | null>(null)
   const [loadingHistory, setLoadingHistory] = useState(true)
   const abortRef = useRef<(() => void) | null>(null)
 
-  // ─── Load latest conversation on mount / project change ────────────────────
   useEffect(() => {
     let cancelled = false
     setLoadingHistory(true)
     setMessages([])
     setConversationId(undefined)
+    setThinkingMessage(null)
 
     const load = async () => {
       try {
         const convs = await getConversations(projectId)
         if (cancelled || convs.length === 0) return
-
-        // convs are ordered by updated_at desc — first one is the latest
         const latest = convs[0]
         const detail = await getConversation(projectId, latest.id)
         if (cancelled) return
 
-        const loaded: ChatMessage[] = detail.messages.map((m) => ({
-          id: `server-${m.id}`,
-          role: m.role,
-          content: m.content,
-        }))
+        const loaded: ChatMessage[] = detail.messages.map((m) => {
+          if (m.role === 'assistant' && m.content.includes('[Archivo generado:')) {
+            const { cleanContent, filesReady } = parseAssistantContent(m.content)
+            return { id: `server-${m.id}`, role: m.role as 'assistant', content: cleanContent, filesReady }
+          }
+          return { id: `server-${m.id}`, role: m.role as 'user' | 'assistant', content: m.content }
+        })
+
         setMessages(loaded)
         setConversationId(latest.id)
       } catch {
-        // No conversations yet, or network error — start fresh
+        // No conversations yet — start fresh
       } finally {
         if (!cancelled) setLoadingHistory(false)
       }
@@ -51,7 +83,6 @@ export function useChat(projectId: number) {
     return () => { cancelled = true }
   }, [projectId])
 
-  // ─── Send a message ─────────────────────────────────────────────────────────
   const send = useCallback(
     (text: string) => {
       if (streaming) return
@@ -62,25 +93,38 @@ export function useChat(projectId: number) {
 
       setMessages((prev) => [...prev, userMsg, assistantMsg])
       setStreaming(true)
+      setThinkingMessage('Analizando solicitud')
 
       abortRef.current = streamChat(projectId, text, conversationId, {
         onMeta: (convId) => setConversationId(convId),
+
+        onThinking: (msg) => {
+          setThinkingMessage(msg || null)
+        },
+
         onToken: (token) => {
+          setThinkingMessage(null)
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantId ? { ...m, content: m.content + token } : m,
             ),
           )
         },
+
         onFileReady: (filename, url, label) => {
+          setThinkingMessage(null)
           setMessages((prev) =>
             prev.map((m) =>
-              m.id === assistantId ? { ...m, fileReady: { filename, url, label } } : m,
+              m.id === assistantId
+                ? { ...m, filesReady: [...(m.filesReady ?? []), { filename, url, label }] }
+                : m,
             ),
           )
           window.dispatchEvent(new CustomEvent('briefscope:file_ready', { detail: filename }))
         },
+
         onError: (err) => {
+          setThinkingMessage(null)
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantId ? { ...m, content: `⚠️ ${err}` } : m,
@@ -88,19 +132,23 @@ export function useChat(projectId: number) {
           )
           setStreaming(false)
         },
-        onDone: () => setStreaming(false),
+
+        onDone: () => {
+          setThinkingMessage(null)
+          setStreaming(false)
+        },
       })
     },
     [projectId, conversationId, streaming],
   )
 
-  // ─── Reset — clear UI state, next message starts a new conversation ─────────
   const reset = useCallback(() => {
     abortRef.current?.()
     setMessages([])
     setConversationId(undefined)
     setStreaming(false)
+    setThinkingMessage(null)
   }, [])
 
-  return { messages, streaming, loadingHistory, conversationId, send, reset }
+  return { messages, streaming, thinkingMessage, loadingHistory, conversationId, send, reset }
 }

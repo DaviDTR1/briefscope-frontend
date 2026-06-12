@@ -11,6 +11,8 @@ import {
   DialogFooter,
 } from '../ui/dialog'
 
+interface PendingDeleteProject { id: number; name: string }
+
 export default function Sidebar() {
   const { data: projects = [], isLoading } = useProjects()
   const createProject = useCreateProject()
@@ -18,6 +20,7 @@ export default function Sidebar() {
   const navigate = useNavigate()
   const [modalOpen, setModalOpen] = useState(false)
   const [newName, setNewName] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<PendingDeleteProject | null>(null)
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,10 +31,16 @@ export default function Sidebar() {
     navigate(`/projects/${proj.id}`)
   }
 
-  const handleDelete = async (e: React.MouseEvent, id: number) => {
+  const handleDeleteClick = (e: React.MouseEvent, id: number, name: string) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!confirm('¿Eliminar este proyecto?')) return
+    setPendingDelete({ id, name })
+  }
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return
+    const id = pendingDelete.id
+    setPendingDelete(null)
     await deleteProject.mutateAsync(id)
     navigate('/')
   }
@@ -76,7 +85,7 @@ export default function Sidebar() {
                 variant="danger"
                 size="icon"
                 className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 h-5 w-5 text-[11px]"
-                onClick={(e) => handleDelete(e, p.id)}
+                onClick={(e) => handleDeleteClick(e, p.id, p.name)}
               >
                 ✕
               </Button>
@@ -108,6 +117,37 @@ export default function Sidebar() {
           </NavLink>
         </div>
       </aside>
+
+      {/* Delete project confirmation dialog */}
+      <Dialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null) }}>
+        <DialogContent showClose={false}>
+          <DialogHeader>
+            <DialogTitle>Eliminar proyecto</DialogTitle>
+          </DialogHeader>
+          <p className="text-[13px] text-text-dim leading-relaxed">
+            ¿Eliminar{' '}
+            <span className="text-text font-medium">"{pendingDelete?.name}"</span>?
+            {' '}Se borrarán todos los documentos y conversaciones. Esta acción no se puede deshacer.
+          </p>
+          <DialogFooter className="mt-5">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setPendingDelete(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={confirmDelete}
+              disabled={deleteProject.isPending}
+            >
+              {deleteProject.isPending ? 'Eliminando…' : 'Eliminar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* New project modal */}
       <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) closeModal() }}>

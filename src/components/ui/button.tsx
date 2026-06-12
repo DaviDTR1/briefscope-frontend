@@ -21,9 +21,12 @@ const buttonVariants = cva(
         // Tertiary — no border/bg (Borrar key, ↺ Reiniciar, ghost icon)
         ghost:
           'bg-transparent text-text-dim rounded-sm hover:text-text-muted',
-        // Ghost that highlights in red on hover (delete buttons)
+        // Ghost that highlights in red on hover (delete icon buttons)
         danger:
           'bg-transparent text-text-dim rounded-sm hover:text-accent hover:bg-accent-soft',
+        // Solid red — for delete confirmation in dialogs
+        destructive:
+          'bg-accent text-white rounded-sm hover:bg-[#c4130a] active:bg-[#a81009]',
       },
       size: {
         default: 'h-9 px-4 text-[13.5px] font-medium',

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useChat } from '../../hooks/useChat'
 import { useConfig } from '../../hooks/useConfig'
 import MessageBubble from './MessageBubble'
+import ThinkingIndicator from './ThinkingIndicator'
 import ChatInput from './ChatInput'
 import { Button } from '../ui/button'
 import { RotateCcw } from '../ui/icons'
@@ -28,13 +29,13 @@ function shortModel(model: string) {
 }
 
 export default function ChatPanel({ projectId, projectName }: Props) {
-  const { messages, streaming, loadingHistory, send, reset } = useChat(projectId)
+  const { messages, streaming, thinkingMessage, loadingHistory, send, reset } = useChat(projectId)
   const { data: config } = useConfig()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, thinkingMessage])
 
   const providerLabel = config ? (PROVIDER_LABELS[config.cloud_provider] ?? config.cloud_provider) : null
   const modelLabel    = config ? shortModel(config.cloud_model) : null
@@ -49,7 +50,6 @@ export default function ChatPanel({ projectId, projectName }: Props) {
         <span className="text-[13.5px] font-medium text-text">{projectName}</span>
 
         <div className="flex items-center gap-4">
-          {/* Model indicator pill */}
           {config && (
             <div
               className="flex items-center gap-1.5 text-[11.5px] font-mono text-text-dim rounded-sm px-2.5 py-[3px] select-none"
@@ -93,13 +93,28 @@ export default function ChatPanel({ projectId, projectName }: Props) {
             </p>
           </div>
         )}
-        {messages.map((msg, i) => (
-          <MessageBubble
-            key={msg.id}
-            msg={msg}
-            streaming={streaming && i === messages.length - 1 && msg.role === 'assistant'}
-          />
-        ))}
+
+        {messages.map((msg, i) => {
+          const isCurrentAssistant = streaming && i === messages.length - 1 && msg.role === 'assistant'
+          // While thinking indicator is active and no content yet — skip rendering the bubble
+          // (ThinkingIndicator renders below and serves as the visual placeholder)
+          if (isCurrentAssistant && thinkingMessage && !msg.content.trim() && !msg.filesReady?.length) {
+            return null
+          }
+          return (
+            <MessageBubble
+              key={msg.id}
+              msg={msg}
+              streaming={isCurrentAssistant}
+            />
+          )
+        })}
+
+        {/* Thinking indicator — agent is working, no content yet */}
+        {thinkingMessage && streaming && (
+          <ThinkingIndicator message={thinkingMessage} />
+        )}
+
         <div ref={bottomRef} />
       </div>
 
