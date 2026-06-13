@@ -47,7 +47,9 @@ function dispatch(event: string, data: string, callbacks: ChatStreamCallbacks) {
     case 'file_ready': {
       try {
         const f = JSON.parse(data)
-        const url = `${rootPath()}/files/${encodeURIComponent(f.filename)}`
+        // Bare path only; MessageBubble prepends ROOT_PATH once when rendering.
+        // (Prepending it here too produced a doubled prefix → 404.)
+        const url = `/files/${encodeURIComponent(f.filename)}`
         callbacks.onFileReady?.(f.filename, url, f.formato ?? f.filename)
       } catch { /* ignore */ }
       break
