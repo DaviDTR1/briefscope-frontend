@@ -5,11 +5,11 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { SimpleSelect } from '../ui/select'
 
-const PROVIDERS = [
-  { value: 'anthropic', label: 'Anthropic (Claude)' },
-  { value: 'openai',    label: 'OpenAI (GPT)' },
-  { value: 'google',    label: 'Google (Gemini)' },
-]
+const PROVIDER_LABELS: Record<string, string> = {
+  anthropic: 'Anthropic (Claude)',
+  openai:    'OpenAI (GPT)',
+  google:    'Google (Gemini)',
+}
 
 const MODELS: Record<string, string[]> = {
   anthropic: [
@@ -58,7 +58,11 @@ export default function CloudSettings() {
 
   if (!config) return null
 
-  const provider = config.cloud_provider
+  // The LLM provider is LOCKED to this variant's fixed embedding provider
+  // (openai → OpenAI, gemini → Google). It cannot be switched in the UI; the
+  // backend ignores any attempt to change it.
+  const provider = config.embedding_provider ?? config.cloud_provider
+
   const keyLabel: Record<string, string> = {
     anthropic: 'Anthropic API Key',
     openai:    'OpenAI API Key',
@@ -81,14 +85,19 @@ export default function CloudSettings() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Provider */}
+      {/* Provider — locked to the variant's provider */}
       <div>
         <Label>Proveedor</Label>
-        <SimpleSelect
-          value={provider}
-          onValueChange={(val) => update.mutate({ cloud_provider: val })}
-          options={PROVIDERS}
-        />
+        <div
+          className="flex items-center justify-between rounded-sm px-3 py-2 text-[13px]"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        >
+          <span className="text-text">{PROVIDER_LABELS[provider] ?? provider}</span>
+          <span className="text-[11px] font-mono text-text-dim">🔒 fijado en esta versión</span>
+        </div>
+        <p className="mt-1.5 text-[11px] font-mono text-text-dim">
+          Esta versión usa embeddings de {PROVIDER_LABELS[provider] ?? provider}; el LLM queda fijado al mismo proveedor.
+        </p>
       </div>
 
       {/* Model */}

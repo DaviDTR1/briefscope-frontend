@@ -10,7 +10,8 @@ PLUGINS_DIR="$(dirname "$FRONTEND_DIR")"
 DIST="$FRONTEND_DIR/dist"
 
 VARIANTS=(
-  "briefscope-cloud"
+  "briefscope-cloud-gemini"
+  "briefscope-cloud-openai"
   "briefscope-local-cpu"
   "briefscope-local-gpu"
 )
@@ -28,4 +29,4 @@ for VARIANT in "${VARIANTS[@]}"; do
 done
 
 echo ""
-echo "Deploy completo. Los 3 plugins tienen el frontend actualizado."
+echo "Deploy completo. Los 4 plugins tienen el frontend actualizado."

@@ -12,9 +12,10 @@ const pluginsDir  = resolve(frontendDir, '..')
 const dist        = join(frontendDir, 'dist')
 
 const VARIANTS = [
-  'briefscope-cloud',
-  'briefscope-local-cpu',
-  'briefscope-local-gpu',
+  "briefscope-cloud-gemini",
+  "briefscope-cloud-openai",
+  "briefscope-local-cpu",
+  "briefscope-local-gpu"
 ]
 
 if (!existsSync(dist)) {

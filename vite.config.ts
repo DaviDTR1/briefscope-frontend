@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/ui/',
+  // Relative base so the built assets work under ANY plugin prefix
+  // (/api/<plugin>/ui/...) without rebuilding per variant. index.html injects a
+  // runtime <base href> so relative URLs also resolve correctly on deep routes.
+  base: './',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
