@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '../../i18n'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function ChatInput({ onSend, disabled }: Props) {
+  const { t } = useTranslation()
   const [text, setText] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -36,7 +38,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKey}
         disabled={disabled}
-        placeholder={disabled ? 'Generando respuesta…' : 'Escribe tu mensaje… (Enter para enviar)'}
+        placeholder={disabled ? t('chat.generating') : t('chat.placeholder')}
         rows={1}
         className="flex-1 min-h-[38px] max-h-[160px] overflow-y-auto"
         style={{ opacity: disabled ? 0.5 : 1 }}
@@ -52,7 +54,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
         disabled={disabled || !text.trim()}
         className="shrink-0"
       >
-        {disabled ? '…' : 'Enviar'}
+        {disabled ? '…' : t('chat.send')}
       </Button>
     </form>
   )

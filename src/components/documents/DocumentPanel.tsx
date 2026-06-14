@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
+import { useTranslation } from '../../i18n'
 import { useDocuments, useUploadDocument, useDeleteDocument } from '../../hooks/useDocuments'
 import { api } from '../../api/client'
 import { Button } from '../ui/button'
@@ -35,6 +36,7 @@ interface PendingDelete { id: number; filename: string }
 interface PendingDeleteFile { filename: string }
 
 export default function DocumentPanel({ projectId }: Props) {
+  const { t } = useTranslation()
   const { data: docs = [], isLoading } = useDocuments(projectId)
   const upload = useUploadDocument(projectId)
   const remove = useDeleteDocument(projectId)
@@ -122,21 +124,21 @@ export default function DocumentPanel({ projectId }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-card)', width: 280, minWidth: 280 }}>
       {/* ── Tabs ─────────────────────────────────────────────────── */}
       <div className="flex px-4" style={{ borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-        {(['docs', 'files'] as Tab[]).map((t) => (
+        {(['docs', 'files'] as Tab[]).map((tabKey) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
             className={cn(
               'flex-1 py-2 text-[11px] font-mono tracking-[0.04em] border-b-2 transition-colors',
-              tab === t
+              tab === tabKey
                 ? 'border-text text-text'
                 : 'border-transparent text-text-dim hover:text-text-muted',
             )}
             style={{ background: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
           >
-            {t === 'docs'
-              ? `DOCS${docs.length > 0 ? ` (${docs.length})` : ''}`
-              : `ARCHIVOS${generatedFiles.length > 0 ? ` (${generatedFiles.length})` : ''}`}
+            {tabKey === 'docs'
+              ? `${t('docs.tabDocs')}${docs.length > 0 ? ` (${docs.length})` : ''}`
+              : `${t('docs.tabFiles')}${generatedFiles.length > 0 ? ` (${generatedFiles.length})` : ''}`}
           </button>
         ))}
       </div>
@@ -159,10 +161,10 @@ export default function DocumentPanel({ projectId }: Props) {
             {upload.isPending ? (
               <>
                 <span className="animate-spin-queai inline-block text-[13px]">⟳</span>
-                <span>Subiendo...</span>
+                <span>{t('docs.uploading')}</span>
               </>
             ) : (
-              'Arrastra o haz clic para subir'
+              t('docs.dropOrClick')
             )}
             <input
               ref={inputRef}
@@ -175,11 +177,11 @@ export default function DocumentPanel({ projectId }: Props) {
           </div>
 
           <ul className="flex-1 overflow-y-auto px-2 pb-2 m-0 list-none">
-            {isLoading && <li className="text-[12px] text-text-dim px-2 py-2.5">Cargando...</li>}
+            {isLoading && <li className="text-[12px] text-text-dim px-2 py-2.5">{t('common.loading')}</li>}
             {!isLoading && docs.length === 0 && (
               <li className="text-[12px] text-text-dim text-center px-2 py-6">
-                Sin documentos.<br />
-                <span className="opacity-60">Sube archivos para analizar.</span>
+                {t('docs.empty')}<br />
+                <span className="opacity-60">{t('docs.emptyHint')}</span>
               </li>
             )}
             {docs.map((doc) => {
@@ -206,7 +208,7 @@ export default function DocumentPanel({ projectId }: Props) {
                       size="icon"
                       className="h-6 w-6 text-[11px] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                       onClick={() => setPendingDelete({ id: doc.id, filename: doc.filename })}
-                      title="Eliminar documento"
+                      title={t('docs.deleteDocTitle')}
                     >✕</Button>
                   )}
                 </li>
@@ -220,11 +222,13 @@ export default function DocumentPanel({ projectId }: Props) {
       {tab === 'files' && (
         <div className="flex-1 overflow-y-auto p-2">
           {loadingFiles && (
-            <p className="text-[12px] text-text-dim text-center px-2 py-4">Cargando archivos…</p>
+            <p className="text-[12px] text-text-dim text-center px-2 py-4">{t('docs.loadingFiles')}</p>
           )}
           {!loadingFiles && generatedFiles.length === 0 && (
             <p className="text-[12px] text-text-dim text-center px-2 py-6">
-              Los archivos generados por el agente<br />aparecerán aquí.
+              {t('docs.generatedEmpty').split('\n').map((line, i) => (
+                <span key={i}>{i > 0 && <br />}{line}</span>
+              ))}
             </p>
           )}
           {generatedFiles.map((file) => {
@@ -246,7 +250,7 @@ export default function DocumentPanel({ projectId }: Props) {
                 <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => !isDeleting && handleDownload(file.filename)}
-                  title={`Descargar ${file.filename}`}
+                  title={t('docs.download', { name: file.filename })}
                 >
                   <p className="text-[12.5px] text-text truncate" title={file.filename}>{file.filename}</p>
                   <p className="text-[10.5px] font-mono text-text-dim mt-px">
@@ -261,7 +265,7 @@ export default function DocumentPanel({ projectId }: Props) {
                     size="icon"
                     className="h-6 w-6 text-[11px] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                     onClick={() => setPendingDeleteFile({ filename: file.filename })}
-                    title="Eliminar archivo"
+                    title={t('docs.deleteFileTitle')}
                   >✕</Button>
                 )}
               </div>
@@ -273,14 +277,14 @@ export default function DocumentPanel({ projectId }: Props) {
       {/* ── Delete generated file dialog ─────────────────────────── */}
       <Dialog open={!!pendingDeleteFile} onOpenChange={(open) => { if (!open) setPendingDeleteFile(null) }}>
         <DialogContent showClose={false}>
-          <DialogHeader><DialogTitle>Eliminar archivo</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('docs.deleteFileTitle')}</DialogTitle></DialogHeader>
           <p className="text-[13px] text-text-dim leading-relaxed">
-            ¿Eliminar <span className="text-text font-medium">"{pendingDeleteFile?.filename}"</span>?
-            {' '}Esta acción no se puede deshacer.
+            {t('docs.deleteConfirm', { name: `"${pendingDeleteFile?.filename ?? ''}"` })}
+            {' '}{t('docs.deleteWarning')}
           </p>
           <DialogFooter className="mt-5">
-            <Button variant="outline" className="flex-1" onClick={() => setPendingDeleteFile(null)}>Cancelar</Button>
-            <Button variant="destructive" className="flex-1" onClick={confirmDeleteFile}>Eliminar</Button>
+            <Button variant="outline" className="flex-1" onClick={() => setPendingDeleteFile(null)}>{t('common.cancel')}</Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDeleteFile}>{t('common.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -288,14 +292,14 @@ export default function DocumentPanel({ projectId }: Props) {
       {/* ── Delete document confirmation dialog ──────────────────── */}
       <Dialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null) }}>
         <DialogContent showClose={false}>
-          <DialogHeader><DialogTitle>Eliminar documento</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('docs.deleteDocTitle')}</DialogTitle></DialogHeader>
           <p className="text-[13px] text-text-dim leading-relaxed">
-            ¿Eliminar <span className="text-text font-medium">"{pendingDelete?.filename}"</span>?
-            {' '}Esta accion no se puede deshacer.
+            {t('docs.deleteConfirm', { name: `"${pendingDelete?.filename ?? ''}"` })}
+            {' '}{t('docs.deleteWarning')}
           </p>
           <DialogFooter className="mt-5">
-            <Button variant="outline" className="flex-1" onClick={() => setPendingDelete(null)}>Cancelar</Button>
-            <Button variant="destructive" className="flex-1" onClick={confirmDelete} disabled={deletingId !== null}>Eliminar</Button>
+            <Button variant="outline" className="flex-1" onClick={() => setPendingDelete(null)}>{t('common.cancel')}</Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDelete} disabled={deletingId !== null}>{t('common.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

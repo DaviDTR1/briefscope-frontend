@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useTranslation, type Lang } from '../../i18n'
 import { useProjects, useCreateProject, useDeleteProject } from '../../hooks/useProjects'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -14,6 +15,7 @@ import {
 interface PendingDeleteProject { id: number; name: string }
 
 export default function Sidebar() {
+  const { t, lang, setLang } = useTranslation()
   const { data: projects = [], isLoading } = useProjects()
   const createProject = useCreateProject()
   const deleteProject = useDeleteProject()
@@ -66,7 +68,7 @@ export default function Sidebar() {
         {/* Project list */}
         <nav className="flex-1 overflow-y-auto py-2 px-2">
           {isLoading && (
-            <p className="text-[12px] text-text-dim px-2.5 py-2">Cargando…</p>
+            <p className="text-[12px] text-text-dim px-2.5 py-2">{t('common.loading')}</p>
           )}
           {projects.map((p) => (
             <NavLink
@@ -92,7 +94,7 @@ export default function Sidebar() {
             </NavLink>
           ))}
           {!isLoading && projects.length === 0 && (
-            <p className="text-[12px] text-text-dim px-2.5 py-2">Sin proyectos</p>
+            <p className="text-[12px] text-text-dim px-2.5 py-2">{t('project.none')}</p>
           )}
         </nav>
 
@@ -103,8 +105,29 @@ export default function Sidebar() {
             className="w-full text-[13px]"
             onClick={() => setModalOpen(true)}
           >
-            + Nuevo proyecto
+            {t('project.new')}
           </Button>
+        </div>
+
+        {/* Language switcher */}
+        <div className="px-3 flex items-center justify-center gap-1">
+          {(['es', 'en'] as Lang[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              className="text-[11px] font-mono px-1.5 py-0.5 rounded-sm transition-colors"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                color: lang === l ? 'var(--text)' : 'var(--text-dim)',
+                fontWeight: lang === l ? 600 : 400,
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
         </div>
 
         {/* Settings link */}
@@ -113,7 +136,7 @@ export default function Sidebar() {
             to="/settings"
             className="block text-center text-[12px] font-mono text-text-dim py-1.5 tracking-[0.02em] hover:text-text-muted transition-colors"
           >
-            ⚙ Configuración
+            ⚙ {t('settings.title')}
           </NavLink>
         </div>
       </aside>
@@ -122,12 +145,11 @@ export default function Sidebar() {
       <Dialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null) }}>
         <DialogContent showClose={false}>
           <DialogHeader>
-            <DialogTitle>Eliminar proyecto</DialogTitle>
+            <DialogTitle>{t('project.deleteTitle')}</DialogTitle>
           </DialogHeader>
           <p className="text-[13px] text-text-dim leading-relaxed">
-            ¿Eliminar{' '}
-            <span className="text-text font-medium">"{pendingDelete?.name}"</span>?
-            {' '}Se borrarán todos los documentos y conversaciones. Esta acción no se puede deshacer.
+            {t('project.deleteConfirm', { name: `"${pendingDelete?.name ?? ''}"` })}
+            {' '}{t('project.deleteWarning')}
           </p>
           <DialogFooter className="mt-5">
             <Button
@@ -135,7 +157,7 @@ export default function Sidebar() {
               className="flex-1"
               onClick={() => setPendingDelete(null)}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -143,7 +165,7 @@ export default function Sidebar() {
               onClick={confirmDelete}
               disabled={deleteProject.isPending}
             >
-              {deleteProject.isPending ? 'Eliminando…' : 'Eliminar'}
+              {deleteProject.isPending ? t('common.deleting') : t('common.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -153,22 +175,22 @@ export default function Sidebar() {
       <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) closeModal() }}>
         <DialogContent showClose={false}>
           <DialogHeader>
-            <DialogTitle>Nuevo proyecto</DialogTitle>
+            <DialogTitle>{t('project.newTitle')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreate}>
             <Input
               autoFocus
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Nombre del proyecto…"
+              placeholder={t('project.namePlaceholder')}
               className="text-[14px] py-[9px] mb-1"
             />
             <DialogFooter>
               <Button type="submit" size="full" disabled={!newName.trim() || createProject.isPending}>
-                {createProject.isPending ? 'Creando…' : 'Crear'}
+                {createProject.isPending ? t('common.creating') : t('common.create')}
               </Button>
               <Button type="button" variant="outline" size="full" onClick={closeModal}>
-                Cancelar
+                {t('common.cancel')}
               </Button>
             </DialogFooter>
           </form>

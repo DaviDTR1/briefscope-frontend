@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useTranslation } from '../../i18n'
 import { useDocuments, useUploadDocument, useDeleteDocument } from '../../hooks/useDocuments'
 
 interface Props { projectId: number }
@@ -8,6 +9,7 @@ function fmtTokens(n: number) {
 }
 
 export default function DocumentList({ projectId }: Props) {
+  const { t } = useTranslation()
   const { data: docs = [], isLoading } = useDocuments(projectId)
   const upload = useUploadDocument(projectId)
   const remove = useDeleteDocument(projectId)
@@ -36,7 +38,7 @@ export default function DocumentList({ projectId }: Props) {
           letterSpacing: '0.04em',
         }}
       >
-        DOCUMENTOS ({docs.length})
+        {t('docs.header')} ({docs.length})
       </div>
 
       {/* Drop zone */}
@@ -63,9 +65,9 @@ export default function DocumentList({ projectId }: Props) {
         }}
       >
         {upload.isPending ? (
-          <span style={{ color: 'var(--text-muted)' }}>Subiendo…</span>
+          <span style={{ color: 'var(--text-muted)' }}>{t('docs.uploading')}</span>
         ) : (
-          'Arrastra archivos o haz clic'
+          t('docs.dropFilesOrClick')
         )}
         <input
           ref={inputRef}
@@ -81,7 +83,7 @@ export default function DocumentList({ projectId }: Props) {
       <ul className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
         {isLoading && (
           <li style={{ fontSize: 12, color: 'var(--text-dim)', padding: '8px 2px' }}>
-            Cargando…
+            {t('common.loading')}
           </li>
         )}
         {docs.map((doc) => (
@@ -116,7 +118,7 @@ export default function DocumentList({ projectId }: Props) {
         ))}
         {!isLoading && docs.length === 0 && (
           <li style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', padding: '16px 0' }}>
-            Sin documentos
+            {t('docs.emptyShort')}
           </li>
         )}
       </ul>

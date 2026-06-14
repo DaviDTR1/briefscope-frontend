@@ -1,8 +1,10 @@
 import { Outlet, Link } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import { useTranslation } from '../../i18n'
 import { useConfig } from '../../hooks/useConfig'
 
 export default function AppShell() {
+  const { t } = useTranslation()
   const { data: config } = useConfig()
 
   return (
@@ -22,14 +24,14 @@ export default function AppShell() {
           >
             <span>!</span>
             <span>
-              Configura tu API key en{' '}
+              {t('banner.configurePre')}
               <Link
                 to="/settings"
                 style={{ color: 'var(--warn)', textDecoration: 'underline', fontWeight: 500 }}
               >
-                Configuración
-              </Link>{' '}
-              para comenzar.
+                {t('banner.configureLink')}
+              </Link>
+              {t('banner.configurePost')}
             </span>
           </div>
         )}

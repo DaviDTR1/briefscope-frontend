@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from '../../i18n'
 import { useConfig, useUpdateConfig } from '../../hooks/useConfig'
 import { getOllamaModels } from '../../api/config'
 import { Button } from '../ui/button'
@@ -7,6 +8,7 @@ import { Label } from '../ui/label'
 import { SimpleSelect } from '../ui/select'
 
 export default function LocalSettings() {
+  const { t } = useTranslation()
   const { data: config } = useConfig()
   const update = useUpdateConfig()
   const [models, setModels] = useState<string[]>([])
@@ -35,7 +37,7 @@ export default function LocalSettings() {
     <div className="flex flex-col gap-5">
       {/* Ollama host */}
       <div>
-        <Label>Ollama Host</Label>
+        <Label>{t('local.host')}</Label>
         <div className="flex gap-2">
           <Input
             value={ollamaHost}
@@ -47,7 +49,7 @@ export default function LocalSettings() {
             className="shrink-0"
             onClick={() => update.mutate({ ollama_host: ollamaHost })}
           >
-            Guardar
+            {t('common.save')}
           </Button>
         </div>
       </div>
@@ -55,7 +57,7 @@ export default function LocalSettings() {
       {/* Model */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <Label className="mb-0">Modelo Activo</Label>
+          <Label className="mb-0">{t('local.activeModel')}</Label>
           <Button
             variant="ghost"
             size="sm"
@@ -63,7 +65,7 @@ export default function LocalSettings() {
             onClick={fetchModels}
             className="font-mono text-[11px] px-0 h-auto"
           >
-            {loadingModels ? 'Cargando…' : '↻ Actualizar'}
+            {loadingModels ? t('common.loading') : t('local.refresh')}
           </Button>
         </div>
 
@@ -82,7 +84,7 @@ export default function LocalSettings() {
           />
         )}
         <p className="mt-1.5 text-[11px] font-mono text-text-dim">
-          El modelo se descarga automáticamente si no está instalado.
+          {t('local.modelHint')}
         </p>
       </div>
     </div>

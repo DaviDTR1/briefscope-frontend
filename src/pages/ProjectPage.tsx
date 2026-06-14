@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from '../i18n'
 import { useProject } from '../hooks/useProjects'
 import DocumentPanel from '../components/documents/DocumentPanel'
 import ChatPanel from '../components/chat/ChatPanel'
 
 export default function ProjectPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const projectId = Number(id)
   const { data: project, isLoading } = useProject(projectId)
@@ -13,7 +15,7 @@ export default function ProjectPage() {
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--text-dim)', fontSize: 13 }}>
-        Cargando proyecto…
+        {t('project.loading')}
       </div>
     )
   }
@@ -21,7 +23,7 @@ export default function ProjectPage() {
   if (!project) {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--text-dim)', fontSize: 13 }}>
-        Proyecto no encontrado
+        {t('project.notFound')}
       </div>
     )
   }
@@ -36,7 +38,7 @@ export default function ProjectPage() {
       {/* Toggle tab — always visible on the right edge of chat */}
       <button
         onClick={() => setDocsOpen((o) => !o)}
-        title={docsOpen ? 'Ocultar documentos' : 'Mostrar documentos'}
+        title={docsOpen ? t('docs.hide') : t('docs.show')}
         style={{
           width: 22,
           flexShrink: 0,

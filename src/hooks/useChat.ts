@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useTranslation } from '../i18n'
 import { streamChat } from '../api/chat'
 import { getConversations, getConversation } from '../api/conversations'
 
@@ -40,6 +41,7 @@ function parseAssistantContent(content: string): { cleanContent: string; filesRe
 }
 
 export function useChat(projectId: number) {
+  const { t } = useTranslation()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [conversationId, setConversationId] = useState<number | undefined>()
   const [streaming, setStreaming] = useState(false)
@@ -93,7 +95,7 @@ export function useChat(projectId: number) {
 
       setMessages((prev) => [...prev, userMsg, assistantMsg])
       setStreaming(true)
-      setThinkingMessage('Analizando solicitud')
+      setThinkingMessage(t('chat.analyzing'))
 
       abortRef.current = streamChat(projectId, text, conversationId, {
         onMeta: (convId) => setConversationId(convId),
@@ -139,7 +141,7 @@ export function useChat(projectId: number) {
         },
       })
     },
-    [projectId, conversationId, streaming],
+    [projectId, conversationId, streaming, t],
   )
 
   const reset = useCallback(() => {

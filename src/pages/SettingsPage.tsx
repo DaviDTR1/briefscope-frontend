@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation, type Lang } from '../i18n'
 import { useConfig, useUpdateConfig } from '../hooks/useConfig'
 import CloudSettings from '../components/settings/CloudSettings'
 import LocalSettings from '../components/settings/LocalSettings'
@@ -16,13 +17,14 @@ const sectionStyle: React.CSSProperties = {
 
 export default function SettingsPage() {
   const navigate = useNavigate()
+  const { t, lang, setLang } = useTranslation()
   const { data: config, isLoading } = useConfig()
   const update = useUpdateConfig()
 
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center text-text-dim text-[13px]">
-        Cargando configuracion…
+        {t('settings.loading')}
       </div>
     )
   }
@@ -41,20 +43,40 @@ export default function SettingsPage() {
             variant="outline"
             size="icon"
             onClick={() => navigate(-1)}
-            title="Volver"
+            title={t('settings.back')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-[20px] font-semibold text-text tracking-[-0.3px]">
-            Configuracion
+            {t('settings.title')}
           </h1>
         </div>
 
         <div className="flex flex-col gap-4">
+          {/* Language */}
+          <section style={sectionStyle}>
+            <h2 className="text-[11px] font-mono text-text-dim tracking-[0.06em] uppercase pb-3.5 mb-4 border-b border-border-subtle">
+              {t('lang.label')}
+            </h2>
+            <div className="flex gap-2">
+              {(['es', 'en'] as Lang[]).map((l) => (
+                <Button
+                  key={l}
+                  variant={lang === l ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setLang(l)}
+                  className="px-4"
+                >
+                  {l === 'es' ? 'Español' : 'English'}
+                </Button>
+              ))}
+            </div>
+          </section>
+
           {/* LLM */}
           <section style={sectionStyle}>
             <h2 className="text-[11px] font-mono text-text-dim tracking-[0.06em] uppercase pb-3.5 mb-4 border-b border-border-subtle">
-              {isLocal ? 'Modo Local — Ollama' : 'Modo Cloud'}
+              {isLocal ? t('settings.modeLocal') : t('settings.modeCloud')}
             </h2>
             {isLocal ? <LocalSettings /> : <CloudSettings />}
           </section>
@@ -62,11 +84,11 @@ export default function SettingsPage() {
           {/* RAG */}
           <section style={sectionStyle}>
             <h2 className="text-[11px] font-mono text-text-dim tracking-[0.06em] uppercase pb-3.5 mb-4 border-b border-border-subtle">
-              RAG — Busqueda en Documentos
+              {t('settings.ragTitle')}
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Umbral Tokens</Label>
+                <Label>{t('settings.ragThreshold')}</Label>
                 <Input
                   type="number"
                   defaultValue={config.rag_threshold_tokens}
@@ -74,11 +96,11 @@ export default function SettingsPage() {
                   className="font-mono text-[13px]"
                 />
                 <p className="mt-1.5 text-[11px] font-mono text-text-dim">
-                  Activar RAG sobre este limite
+                  {t('settings.ragThresholdHint')}
                 </p>
               </div>
               <div>
-                <Label>Top-K Resultados</Label>
+                <Label>{t('settings.ragTopK')}</Label>
                 <Input
                   type="number"
                   defaultValue={config.rag_top_k}
@@ -92,10 +114,10 @@ export default function SettingsPage() {
           {/* History */}
           <section style={sectionStyle}>
             <h2 className="text-[11px] font-mono text-text-dim tracking-[0.06em] uppercase pb-3.5 mb-4 border-b border-border-subtle">
-              Historial y Memoria
+              {t('settings.historyTitle')}
             </h2>
             <div>
-              <Label>Compactar tras N turnos</Label>
+              <Label>{t('settings.compactAfter')}</Label>
               <Input
                 type="number"
                 defaultValue={config.history_compact_after}
@@ -103,7 +125,7 @@ export default function SettingsPage() {
                 className="max-w-[120px] font-mono text-[13px]"
               />
               <p className="mt-1.5 text-[11px] font-mono text-text-dim">
-                El historial antiguo se resume para ahorrar tokens.
+                {t('settings.compactHint')}
               </p>
             </div>
           </section>

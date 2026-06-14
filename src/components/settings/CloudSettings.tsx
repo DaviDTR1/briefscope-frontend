@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '../../i18n'
 import { useConfig, useUpdateConfig } from '../../hooks/useConfig'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -51,6 +52,7 @@ const MODELS: Record<string, string[]> = {
 }
 
 export default function CloudSettings() {
+  const { t } = useTranslation()
   const { data: config } = useConfig()
   const update = useUpdateConfig()
   const [apiKey, setApiKey] = useState('')
@@ -87,22 +89,22 @@ export default function CloudSettings() {
     <div className="flex flex-col gap-5">
       {/* Provider — locked to the variant's provider */}
       <div>
-        <Label>Proveedor</Label>
+        <Label>{t('cloud.provider')}</Label>
         <div
           className="flex items-center justify-between rounded-sm px-3 py-2 text-[13px]"
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
         >
           <span className="text-text">{PROVIDER_LABELS[provider] ?? provider}</span>
-          <span className="text-[11px] font-mono text-text-dim">🔒 fijado en esta versión</span>
+          <span className="text-[11px] font-mono text-text-dim">{t('cloud.locked')}</span>
         </div>
         <p className="mt-1.5 text-[11px] font-mono text-text-dim">
-          Esta versión usa embeddings de {PROVIDER_LABELS[provider] ?? provider}; el LLM queda fijado al mismo proveedor.
+          {t('cloud.providerHint', { provider: PROVIDER_LABELS[provider] ?? provider })}
         </p>
       </div>
 
       {/* Model */}
       <div>
-        <Label>Modelo</Label>
+        <Label>{t('cloud.model')}</Label>
         <SimpleSelect
           value={config.cloud_model}
           onValueChange={(val) => update.mutate({ cloud_model: val })}
@@ -113,10 +115,10 @@ export default function CloudSettings() {
       {/* API Key */}
       <div>
         <Label>
-          {keyLabel[provider] ?? 'API Key'}
+          {keyLabel[provider] ?? t('cloud.apiKey')}
           {keySet[provider] && (
             <span className="ml-2 text-ok normal-case font-sans tracking-normal font-normal">
-              ✓ Configurada
+              {t('cloud.configured')}
             </span>
           )}
         </Label>
@@ -125,7 +127,7 @@ export default function CloudSettings() {
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={keySet[provider] ? '••••••••• (reemplazar)' : 'sk-…'}
+            placeholder={keySet[provider] ? t('cloud.keyPlaceholderReplace') : 'sk-…'}
             className="flex-1 w-auto"
             onKeyDown={(e) => { if (e.key === 'Enter') handleSaveKey() }}
           />
@@ -135,7 +137,7 @@ export default function CloudSettings() {
             disabled={!apiKey.trim() || update.isPending}
             className="shrink-0"
           >
-            {saved ? '✓ Guardado' : 'Guardar'}
+            {saved ? t('common.saved') : t('common.save')}
           </Button>
         </div>
 
@@ -146,7 +148,7 @@ export default function CloudSettings() {
             className="mt-2 px-0"
             onClick={() => update.mutate({ [`${provider}_api_key`]: '' } as object)}
           >
-            Borrar key
+            {t('cloud.deleteKey')}
           </Button>
         )}
       </div>

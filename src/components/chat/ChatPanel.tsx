@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from '../../i18n'
 import { useChat } from '../../hooks/useChat'
 import { useConfig } from '../../hooks/useConfig'
 import MessageBubble from './MessageBubble'
@@ -29,6 +30,7 @@ function shortModel(model: string) {
 }
 
 export default function ChatPanel({ projectId, projectName }: Props) {
+  const { t } = useTranslation()
   const { messages, streaming, thinkingMessage, loadingHistory, send, reset } = useChat(projectId)
   const { data: config } = useConfig()
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -67,11 +69,11 @@ export default function ChatPanel({ projectId, projectName }: Props) {
               variant="ghost"
               size="sm"
               onClick={reset}
-              title="Borra la conversación actual y comienza desde cero"
+              title={t('chat.resetTitle')}
               className="gap-1.5 px-0"
             >
               <RotateCcw className="h-3 w-3" />
-              Reiniciar conversación
+              {t('chat.reset')}
             </Button>
           )}
         </div>
@@ -81,15 +83,15 @@ export default function ChatPanel({ projectId, projectName }: Props) {
       <div className="flex-1 overflow-y-auto px-5 py-5">
         {loadingHistory && (
           <div className="flex items-center justify-center h-full text-text-dim text-[13px]">
-            Cargando conversación…
+            {t('chat.loading')}
           </div>
         )}
         {!loadingHistory && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-text-dim text-center">
             <span className="text-[36px]">🔍</span>
-            <p className="text-[13.5px]">Haz una pregunta sobre tus documentos</p>
+            <p className="text-[13.5px]">{t('chat.emptyPrompt')}</p>
             <p className="text-[12px] font-mono text-text-dim">
-              Enter para enviar · Shift+Enter para nueva línea
+              {t('chat.hint')}
             </p>
           </div>
         )}
