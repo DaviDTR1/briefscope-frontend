@@ -10,7 +10,20 @@ interface Props { projectId: number }
 
 type Tab = 'docs' | 'files'
 
-interface GeneratedFile { filename: string; size: number }
+interface GeneratedFile {
+  filename: string
+  size: number
+  title?: string
+  created_at?: string
+  format?: string
+}
+
+function fmtDate(iso?: string) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
 
 function fileIcon(name: string) {
   const ext = name.split('.').pop()?.toLowerCase()
@@ -53,14 +66,14 @@ export default function DocumentPanel({ projectId }: Props) {
   const fetchFiles = useCallback(async () => {
     setLoadingFiles(true)
     try {
-      const res = await api.get<GeneratedFile[]>('/files')
+      const res = await api.get<GeneratedFile[]>('/files', { params: { project_id: projectId } })
       setGeneratedFiles(res.data)
     } catch {
       // silently ignore
     } finally {
       setLoadingFiles(false)
     }
-  }, [])
+  }, [projectId])
 
   useEffect(() => {
     fetchFiles()
@@ -100,7 +113,7 @@ export default function DocumentPanel({ projectId }: Props) {
   const handleDownload = (filename: string) => {
     const base = api.defaults.baseURL ?? ''
     const a = document.createElement('a')
-    a.href = `${base}/files/${encodeURIComponent(filename)}`
+    a.href = `${base}/files/${encodeURIComponent(filename)}?project_id=${projectId}`
     a.download = filename
     a.click()
   }
@@ -111,7 +124,7 @@ export default function DocumentPanel({ projectId }: Props) {
     setPendingDeleteFile(null)
     setDeletingFile(filename)
     try {
-      await api.delete(`/files/${encodeURIComponent(filename)}`)
+      await api.delete(`/files/${encodeURIComponent(filename)}`, { params: { project_id: projectId } })
       setGeneratedFiles(prev => prev.filter(f => f.filename !== filename))
     } catch {
       // silently ignore
@@ -252,9 +265,9 @@ export default function DocumentPanel({ projectId }: Props) {
                   onClick={() => !isDeleting && handleDownload(file.filename)}
                   title={t('docs.download', { name: file.filename })}
                 >
-                  <p className="text-[12.5px] text-text truncate" title={file.filename}>{file.filename}</p>
+                  <p className="text-[12.5px] text-text truncate" title={file.title || file.filename}>{file.filename}</p>
                   <p className="text-[10.5px] font-mono text-text-dim mt-px">
-                    {ext.toUpperCase()} · {fmtSize(file.size)}
+                    {ext.toUpperCase()} · {fmtSize(file.size)}{file.created_at ? ` · ${fmtDate(file.created_at)}` : ''}
                   </p>
                 </div>
                 {isDeleting ? (

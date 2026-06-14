@@ -16,9 +16,10 @@ export interface ChatMessage {
   filesReady?: FileReady[]
 }
 
-/** Parse "[Archivo generado: filename]" markers saved to DB back into filesReady. */
-function parseAssistantContent(content: string): { cleanContent: string; filesReady?: FileReady[] } {
-  const pattern = /\[Archivo generado:\s*([^\]]+)\]/g
+/** Parse generated-file markers saved to DB back into filesReady. Matches both
+ *  the legacy "[Archivo generado: ...]" and the current "[Generated file: ...]". */
+function parseAssistantContent(content: string, projectId: number): { cleanContent: string; filesReady?: FileReady[] } {
+  const pattern = /\[(?:Archivo generado|Generated file):\s*([^\]]+)\]/g
   const filesReady: FileReady[] = []
 
   const cleanContent = content
@@ -27,7 +28,7 @@ function parseAssistantContent(content: string): { cleanContent: string; filesRe
       const ext = filename.split('.').pop()?.toUpperCase() ?? 'FILE'
       filesReady.push({
         filename,
-        url: `/files/${encodeURIComponent(filename)}`,
+        url: `/files/${encodeURIComponent(filename)}?project_id=${projectId}`,
         label: ext,
       })
       return ''
@@ -65,8 +66,8 @@ export function useChat(projectId: number) {
         if (cancelled) return
 
         const loaded: ChatMessage[] = detail.messages.map((m) => {
-          if (m.role === 'assistant' && m.content.includes('[Archivo generado:')) {
-            const { cleanContent, filesReady } = parseAssistantContent(m.content)
+          if (m.role === 'assistant' && (m.content.includes('[Archivo generado:') || m.content.includes('[Generated file:'))) {
+            const { cleanContent, filesReady } = parseAssistantContent(m.content, projectId)
             return { id: `server-${m.id}`, role: m.role as 'assistant', content: cleanContent, filesReady }
           }
           return { id: `server-${m.id}`, role: m.role as 'user' | 'assistant', content: m.content }

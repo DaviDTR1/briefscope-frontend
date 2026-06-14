@@ -29,7 +29,7 @@ export interface ChatStreamCallbacks {
   onDone?: () => void
 }
 
-function dispatch(event: string, data: string, callbacks: ChatStreamCallbacks) {
+function dispatch(event: string, data: string, callbacks: ChatStreamCallbacks, projectId: number) {
   switch (event) {
     case 'meta': {
       try {
@@ -49,7 +49,8 @@ function dispatch(event: string, data: string, callbacks: ChatStreamCallbacks) {
         const f = JSON.parse(data)
         // Bare path only; MessageBubble prepends ROOT_PATH once when rendering.
         // (Prepending it here too produced a doubled prefix → 404.)
-        const url = `/files/${encodeURIComponent(f.filename)}`
+        // Scoped by project so a file only downloads from its owning project.
+        const url = `/files/${encodeURIComponent(f.filename)}?project_id=${projectId}`
         callbacks.onFileReady?.(f.filename, url, f.formato ?? f.filename)
       } catch { /* ignore */ }
       break
@@ -107,7 +108,7 @@ export function streamChat(
             currentDataLines.push(line.slice(6))
           } else if (line === '') {
             if (currentEvent) {
-              dispatch(currentEvent, currentDataLines.join('\n'), callbacks)
+              dispatch(currentEvent, currentDataLines.join('\n'), callbacks, projectId)
             }
             currentEvent = ''
             currentDataLines = []
@@ -116,7 +117,7 @@ export function streamChat(
       }
 
       if (currentEvent && currentDataLines.length > 0) {
-        dispatch(currentEvent, currentDataLines.join('\n'), callbacks)
+        dispatch(currentEvent, currentDataLines.join('\n'), callbacks, projectId)
       }
 
       callbacks.onDone?.()
