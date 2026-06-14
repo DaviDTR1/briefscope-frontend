@@ -7,6 +7,15 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { SimpleSelect } from '../ui/select'
 
+const EMBEDDING_MODELS = [
+  'all-MiniLM-L6-v2',
+  'BAAI/bge-small-en-v1.5',
+  'all-mpnet-base-v2',
+  'paraphrase-multilingual-MiniLM-L12-v2',
+  'intfloat/multilingual-e5-small',
+  'paraphrase-multilingual-mpnet-base-v2',
+]
+
 export default function LocalSettings() {
   const { t } = useTranslation()
   const { data: config } = useConfig()
@@ -85,6 +94,22 @@ export default function LocalSettings() {
         )}
         <p className="mt-1.5 text-[11px] font-mono text-text-dim">
           {t('local.modelHint')}
+        </p>
+      </div>
+
+      {/* Embedding model */}
+      <div>
+        <Label>{t('local.embedding')}</Label>
+        <SimpleSelect
+          value={config.embedding_model ?? 'all-MiniLM-L6-v2'}
+          onValueChange={(val) => update.mutate({ embedding_model: val })}
+          options={(EMBEDDING_MODELS.includes(config.embedding_model ?? '')
+            ? EMBEDDING_MODELS
+            : [config.embedding_model ?? 'all-MiniLM-L6-v2', ...EMBEDDING_MODELS]
+          ).map((m) => ({ value: m }))}
+        />
+        <p className="mt-1.5 text-[11px] font-mono text-text-dim">
+          {t('local.embeddingHint')}
         </p>
       </div>
     </div>

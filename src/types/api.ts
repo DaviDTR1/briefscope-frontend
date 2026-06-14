@@ -100,6 +100,7 @@ export interface ConfigUpdate {
   anthropic_api_key?: string
   openai_api_key?: string
   google_api_key?: string
+  embedding_model?: string
   rag_threshold_tokens?: number
   rag_top_k?: number
   history_compact_after?: number

@@ -108,6 +108,8 @@ const en: Dict = {
   'local.activeModel': 'Active Model',
   'local.refresh': '↻ Refresh',
   'local.modelHint': 'The model is downloaded automatically if not installed.',
+  'local.embedding': 'Embedding Model',
+  'local.embeddingHint': 'Used for document search. Downloaded automatically on first use. Changing it invalidates indexed documents — re-upload them.',
 
   // language
   'lang.label': 'Language',
@@ -204,6 +206,8 @@ const es: Dict = {
   'local.activeModel': 'Modelo Activo',
   'local.refresh': '↻ Actualizar',
   'local.modelHint': 'El modelo se descarga automáticamente si no está instalado.',
+  'local.embedding': 'Modelo de Embedding',
+  'local.embeddingHint': 'Se usa para la búsqueda en documentos. Se descarga automáticamente la primera vez. Cambiarlo invalida los documentos indexados — vuelve a subirlos.',
 
   'lang.label': 'Idioma',
 }
