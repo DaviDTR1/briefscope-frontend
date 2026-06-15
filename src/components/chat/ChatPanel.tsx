@@ -34,10 +34,24 @@ export default function ChatPanel({ projectId, projectName }: Props) {
   const { messages, streaming, thinkingMessage, loadingHistory, send, reset } = useChat(projectId)
   const { data: config } = useConfig()
   const bottomRef = useRef<HTMLDivElement>(null)
+  const prevCount = useRef(0)
 
+  // Jump to the latest message when entering a project (so the most recent
+  // exchange — including one that arrived while you were elsewhere — is visible).
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, thinkingMessage])
+    bottomRef.current?.scrollIntoView()
+    prevCount.current = messages.length
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
+
+  // Scroll only when a NEW message is appended (you send, or a new turn starts),
+  // never on streaming token updates — so you can read replies at your own pace.
+  useEffect(() => {
+    if (messages.length > prevCount.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+    prevCount.current = messages.length
+  }, [messages])
 
   const providerLabel = config ? (PROVIDER_LABELS[config.cloud_provider] ?? config.cloud_provider) : null
   const modelLabel    = config ? shortModel(config.cloud_model) : null
