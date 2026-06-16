@@ -167,7 +167,12 @@ export async function loadHistory(projectId: number): Promise<void> {
 
 /** Start a streaming turn for a project. The stream keeps running and updating
  *  the store regardless of which project is currently on screen. */
-export function sendMessage(projectId: number, text: string, analyzingLabel: string): void {
+export function sendMessage(
+  projectId: number,
+  text: string,
+  analyzingLabel: string,
+  agentContext?: string,
+): void {
   const cur = store.get(projectId) ?? EMPTY
   if (cur.streaming) return
 
@@ -232,7 +237,7 @@ export function sendMessage(projectId: number, text: string, analyzingLabel: str
         streaming: false,
         abort: undefined,
       })),
-  })
+  }, agentContext)
 
   update(projectId, (s) => ({ ...s, abort }))
 }

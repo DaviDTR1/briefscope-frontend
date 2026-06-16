@@ -74,6 +74,9 @@ const en: Dict = {
   'chat.send': 'Send',
   'chat.attach': 'Attach documents to the project',
   'chat.analyzing': 'Analyzing request',
+  'chat.attachedRef': 'Attached documents to this project: {files}.',
+  'chat.attachedChip': 'Attached',
+  'chat.removeAttached': 'Remove attachment',
 
   // app shell banner
   'banner.configurePre': 'Set up your API key in ',
@@ -177,6 +180,9 @@ const es: Dict = {
   'chat.send': 'Enviar',
   'chat.attach': 'Adjuntar documentos al proyecto',
   'chat.analyzing': 'Analizando solicitud',
+  'chat.attachedRef': 'Documentos adjuntados a este proyecto: {files}.',
+  'chat.attachedChip': 'Adjuntado',
+  'chat.removeAttached': 'Quitar adjunto',
 
   'banner.configurePre': 'Configura tu API key en ',
   'banner.configureLink': 'Configuración',

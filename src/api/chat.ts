@@ -69,6 +69,7 @@ export function streamChat(
   message: string,
   conversationId: number | undefined,
   callbacks: ChatStreamCallbacks,
+  agentContext?: string,
 ): () => void {
   const url = `${rootPath()}/projects/${projectId}/chat`
   const controller = new AbortController()
@@ -76,7 +77,14 @@ export function streamChat(
   fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-    body: JSON.stringify({ message, conversation_id: conversationId ?? null }),
+    // `agent_context` is an ephemeral note (e.g. an attachment reference) the
+    // backend forwards to the agent for this turn only — it is NOT persisted
+    // as part of the user's stored/displayed message.
+    body: JSON.stringify({
+      message,
+      conversation_id: conversationId ?? null,
+      agent_context: agentContext && agentContext.trim() ? agentContext.trim() : null,
+    }),
     signal: controller.signal,
   })
     .then(async (res) => {

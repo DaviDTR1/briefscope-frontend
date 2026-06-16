@@ -28,7 +28,16 @@ export function useChat(projectId: number) {
   }, [projectId])
 
   const send = useCallback(
-    (text: string) => sendMessage(projectId, text, t('chat.analyzing')),
+    (text: string, attachments?: string[]) => {
+      // Build an ephemeral note referencing freshly attached documents. It is
+      // sent to the agent for this turn only and is never stored as part of the
+      // user's message in the conversation history.
+      const agentContext =
+        attachments && attachments.length > 0
+          ? t('chat.attachedRef', { files: attachments.join(', ') })
+          : undefined
+      sendMessage(projectId, text, t('chat.analyzing'), agentContext)
+    },
     [projectId, t],
   )
 
