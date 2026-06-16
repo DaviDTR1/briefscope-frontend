@@ -134,7 +134,7 @@ export default function ChatPanel({ projectId, projectName }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      <ChatInput onSend={send} disabled={streaming} />
+      <ChatInput projectId={projectId} onSend={send} disabled={streaming} />
     </div>
   )
 }

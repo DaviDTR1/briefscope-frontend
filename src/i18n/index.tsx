@@ -72,6 +72,7 @@ const en: Dict = {
   'chat.generating': 'Generating response…',
   'chat.placeholder': 'Type your message… (Enter to send)',
   'chat.send': 'Send',
+  'chat.attach': 'Attach documents to the project',
   'chat.analyzing': 'Analyzing request',
 
   // app shell banner
@@ -174,6 +175,7 @@ const es: Dict = {
   'chat.generating': 'Generando respuesta…',
   'chat.placeholder': 'Escribe tu mensaje… (Enter para enviar)',
   'chat.send': 'Enviar',
+  'chat.attach': 'Adjuntar documentos al proyecto',
   'chat.analyzing': 'Analizando solicitud',
 
   'banner.configurePre': 'Configura tu API key en ',
