@@ -57,6 +57,7 @@ export interface ConversationDetail extends Conversation {
 export interface ChatRequest {
   message: string
   conversation_id?: number
+  web_search?: boolean
 }
 
 // SSE event payloads
@@ -90,6 +91,9 @@ export interface Config {
   rag_threshold_tokens: number
   rag_top_k: number
   history_compact_after: number
+  // Which agents may use web search when the per-chat switch is on.
+  // Cloud variants only; default ["investigador"].
+  web_search_agents?: string[]
 }
 
 export interface ConfigUpdate {
@@ -104,6 +108,7 @@ export interface ConfigUpdate {
   rag_threshold_tokens?: number
   rag_top_k?: number
   history_compact_after?: number
+  web_search_agents?: string[]
 }
 
 export interface ConfigStatus {

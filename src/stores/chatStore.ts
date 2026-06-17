@@ -172,6 +172,7 @@ export function sendMessage(
   text: string,
   analyzingLabel: string,
   agentContext?: string,
+  webSearch?: boolean,
 ): void {
   const cur = store.get(projectId) ?? EMPTY
   if (cur.streaming) return
@@ -237,7 +238,7 @@ export function sendMessage(
         streaming: false,
         abort: undefined,
       })),
-  }, agentContext)
+  }, agentContext, webSearch)
 
   update(projectId, (s) => ({ ...s, abort }))
 }

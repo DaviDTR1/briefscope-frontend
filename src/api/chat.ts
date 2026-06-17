@@ -70,6 +70,7 @@ export function streamChat(
   conversationId: number | undefined,
   callbacks: ChatStreamCallbacks,
   agentContext?: string,
+  webSearch?: boolean,
 ): () => void {
   const url = `${rootPath()}/projects/${projectId}/chat`
   const controller = new AbortController()
@@ -84,6 +85,7 @@ export function streamChat(
       message,
       conversation_id: conversationId ?? null,
       agent_context: agentContext && agentContext.trim() ? agentContext.trim() : null,
+      web_search: webSearch ?? false,
     }),
     signal: controller.signal,
   })

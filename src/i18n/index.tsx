@@ -77,6 +77,8 @@ const en: Dict = {
   'chat.attachedRef': 'Attached documents to this project: {files}.',
   'chat.attachedChip': 'Attached',
   'chat.removeAttached': 'Remove attachment',
+  'chat.webSearchOn': 'Web search on — agents may search the web this chat',
+  'chat.webSearchOff': 'Web search off — enable to let agents search the web',
 
   // app shell banner
   'banner.configurePre': 'Set up your API key in ',
@@ -106,6 +108,12 @@ const en: Dict = {
   'cloud.configured': '✓ Configured',
   'cloud.keyPlaceholderReplace': '••••••••• (replace)',
   'cloud.deleteKey': 'Delete key',
+  'cloud.webSearchTitle': 'Web Search',
+  'cloud.webSearchHint': 'Choose which agents may search the web. The globe button in the chat turns web search on or off per project; here you decide which agents are allowed to use it.',
+  'cloud.agentInvestigador': 'Researcher',
+  'cloud.agentInvestigadorHint': 'Searches the web to gather information.',
+  'cloud.agentCreador': 'Creator',
+  'cloud.agentCreadorHint': 'Searches the web while producing documents.',
 
   // local settings
   'local.host': 'Ollama Host',
@@ -183,6 +191,8 @@ const es: Dict = {
   'chat.attachedRef': 'Documentos adjuntados a este proyecto: {files}.',
   'chat.attachedChip': 'Adjuntado',
   'chat.removeAttached': 'Quitar adjunto',
+  'chat.webSearchOn': 'Búsqueda web activada — los agentes pueden buscar en la web en este chat',
+  'chat.webSearchOff': 'Búsqueda web desactivada — actívala para que los agentes busquen en la web',
 
   'banner.configurePre': 'Configura tu API key en ',
   'banner.configureLink': 'Configuración',
@@ -209,6 +219,12 @@ const es: Dict = {
   'cloud.configured': '✓ Configurada',
   'cloud.keyPlaceholderReplace': '••••••••• (reemplazar)',
   'cloud.deleteKey': 'Borrar key',
+  'cloud.webSearchTitle': 'Búsqueda Web',
+  'cloud.webSearchHint': 'Elige qué agentes pueden buscar en la web. El botón del globo en el chat activa o desactiva la búsqueda web por proyecto; aquí decides qué agentes tienen permiso para usarla.',
+  'cloud.agentInvestigador': 'Investigador',
+  'cloud.agentInvestigadorHint': 'Busca en la web para recopilar información.',
+  'cloud.agentCreador': 'Creador',
+  'cloud.agentCreadorHint': 'Busca en la web mientras genera documentos.',
 
   'local.host': 'Ollama Host',
   'local.activeModel': 'Modelo Activo',

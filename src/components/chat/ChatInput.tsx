@@ -3,12 +3,15 @@ import { useTranslation } from '../../i18n'
 import { useUploadDocument } from '../../hooks/useDocuments'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
+import { Globe } from '../ui/icons'
 
 interface Props {
   projectId: number
-  onSend: (msg: string, attachments?: string[]) => void
+  onSend: (msg: string, attachments?: string[], webSearch?: boolean) => void
   disabled?: boolean
 }
+
+const webSearchKey = (projectId: number) => `briefscope:webSearch:${projectId}`
 
 export default function ChatInput({ projectId, onSend, disabled }: Props) {
   const { t } = useTranslation()
@@ -19,11 +22,37 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const upload = useUploadDocument(projectId)
 
+  // Web search is a per-project master switch remembered in localStorage. It is
+  // available in both cloud and local modes (DuckDuckGo needs no API key). It is
+  // sent on every chat turn; the backend then grants the `buscar_en_web` tool
+  // only to the agents the user permitted in Settings.
+  const [webSearch, setWebSearch] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(webSearchKey(projectId)) === '1'
+    } catch {
+      return false
+    }
+  })
+
+  const toggleWebSearch = () => {
+    setWebSearch((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem(webSearchKey(projectId), next ? '1' : '0')
+      } catch { /* ignore */ }
+      return next
+    })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = text.trim()
     if (!trimmed || disabled) return
-    onSend(trimmed, attached.length > 0 ? attached : undefined)
+    onSend(
+      trimmed,
+      attached.length > 0 ? attached : undefined,
+      webSearch,
+    )
     setText('')
     setAttached([])
   }
@@ -100,6 +129,20 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
         onClick={() => fileRef.current?.click()}
       >
         {upload.isPending ? <span className="animate-spin-queai inline-block">⟳</span> : '＋'}
+      </Button>
+      <Button
+        type="button"
+        variant={webSearch ? 'outline' : 'ghost'}
+        size="icon"
+        disabled={disabled}
+        className="shrink-0"
+        aria-pressed={webSearch}
+        title={webSearch ? t('chat.webSearchOn') : t('chat.webSearchOff')}
+        aria-label={webSearch ? t('chat.webSearchOn') : t('chat.webSearchOff')}
+        onClick={toggleWebSearch}
+        style={{ opacity: webSearch ? 1 : 0.55 }}
+      >
+        <Globe />
       </Button>
       <Textarea
         value={text}

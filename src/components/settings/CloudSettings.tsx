@@ -85,6 +85,19 @@ export default function CloudSettings() {
     setTimeout(() => setSaved(false), 2000)
   }
 
+  const webSearchAgents = config.web_search_agents ?? ['investigador']
+  const toggleAgent = (agent: 'investigador' | 'creador') => {
+    const next = webSearchAgents.includes(agent)
+      ? webSearchAgents.filter((a) => a !== agent)
+      : [...webSearchAgents, agent]
+    update.mutate({ web_search_agents: next })
+  }
+
+  const AGENTS: { id: 'investigador' | 'creador'; label: string; hint: string }[] = [
+    { id: 'investigador', label: t('cloud.agentInvestigador'), hint: t('cloud.agentInvestigadorHint') },
+    { id: 'creador', label: t('cloud.agentCreador'), hint: t('cloud.agentCreadorHint') },
+  ]
+
   return (
     <div className="flex flex-col gap-5">
       {/* Provider — locked to the variant's provider */}
@@ -151,6 +164,44 @@ export default function CloudSettings() {
             {t('cloud.deleteKey')}
           </Button>
         )}
+      </div>
+
+      {/* Web Search — which agents may use the buscar_en_web tool */}
+      <div>
+        <Label>{t('cloud.webSearchTitle')}</Label>
+        <div className="flex flex-col gap-2">
+          {AGENTS.map((agent) => {
+            const on = webSearchAgents.includes(agent.id)
+            return (
+              <button
+                key={agent.id}
+                type="button"
+                onClick={() => toggleAgent(agent.id)}
+                disabled={update.isPending}
+                aria-pressed={on}
+                className="flex items-center justify-between rounded-sm px-3 py-2 text-left text-[13px]"
+                style={{
+                  background: 'var(--surface)',
+                  border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`,
+                }}
+              >
+                <span className="flex flex-col">
+                  <span className="text-text">{agent.label}</span>
+                  <span className="text-[11px] font-mono text-text-dim">{agent.hint}</span>
+                </span>
+                <span
+                  className="ml-3 shrink-0 text-[11px] font-mono"
+                  style={{ color: on ? 'var(--accent)' : 'var(--text-dim)' }}
+                >
+                  {on ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+        <p className="mt-1.5 text-[11px] font-mono text-text-dim">
+          {t('cloud.webSearchHint')}
+        </p>
       </div>
     </div>
   )
