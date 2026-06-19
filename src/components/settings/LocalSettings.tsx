@@ -7,13 +7,12 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { SimpleSelect } from '../ui/select'
 
+// Embedding models computed by the bundled Ollama server (pulled on first use).
 const EMBEDDING_MODELS = [
-  'all-MiniLM-L6-v2',
-  'BAAI/bge-small-en-v1.5',
-  'all-mpnet-base-v2',
-  'paraphrase-multilingual-MiniLM-L12-v2',
-  'intfloat/multilingual-e5-small',
-  'paraphrase-multilingual-mpnet-base-v2',
+  'nomic-embed-text',
+  'mxbai-embed-large',
+  'bge-m3',
+  'qwen3-embedding',
 ]
 
 export default function LocalSettings() {
@@ -114,11 +113,11 @@ export default function LocalSettings() {
       <div>
         <Label>{t('local.embedding')}</Label>
         <SimpleSelect
-          value={config.embedding_model ?? 'all-MiniLM-L6-v2'}
+          value={config.embedding_model ?? 'nomic-embed-text'}
           onValueChange={(val) => update.mutate({ embedding_model: val })}
           options={(EMBEDDING_MODELS.includes(config.embedding_model ?? '')
             ? EMBEDDING_MODELS
-            : [config.embedding_model ?? 'all-MiniLM-L6-v2', ...EMBEDDING_MODELS]
+            : [config.embedding_model ?? 'nomic-embed-text', ...EMBEDDING_MODELS]
           ).map((m) => ({ value: m }))}
         />
         <p className="mt-1.5 text-[11px] font-mono text-text-dim">
