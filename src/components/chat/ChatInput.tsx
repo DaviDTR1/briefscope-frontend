@@ -20,6 +20,7 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
   // referenced in the note sent to the agent and cleared once the turn is sent.
   const [attached, setAttached] = useState<string[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const upload = useUploadDocument(projectId)
 
   // Web search is a per-project master switch remembered in localStorage. It is
@@ -55,6 +56,9 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
     )
     setText('')
     setAttached([])
+    // The textarea auto-grows by setting style.height imperatively in onInput,
+    // so clearing the value alone leaves it expanded. Reset it to its base size.
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -150,6 +154,7 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
         <Globe />
       </Button>
       <Textarea
+        ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKey}
@@ -159,9 +164,9 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
         className="flex-1 min-h-[38px] max-h-[160px] overflow-y-auto"
         style={{ opacity: disabled ? 0.5 : 1 }}
         onInput={(e) => {
-          const t = e.currentTarget
-          t.style.height = 'auto'
-          t.style.height = `${Math.min(t.scrollHeight, 160)}px`
+          const el = e.currentTarget
+          el.style.height = 'auto'
+          el.style.height = `${Math.min(el.scrollHeight, 160)}px`
         }}
       />
       <Button
