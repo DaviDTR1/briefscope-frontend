@@ -120,19 +120,20 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
       />
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="icon"
         disabled={disabled || upload.isPending}
         className="shrink-0"
         title={t('chat.attach')}
         aria-label={t('chat.attach')}
         onClick={() => fileRef.current?.click()}
+        style={{ borderColor: 'var(--text-dim)' }}
       >
         {upload.isPending ? <span className="animate-spin-queai inline-block">⟳</span> : '＋'}
       </Button>
       <Button
         type="button"
-        variant={webSearch ? 'outline' : 'ghost'}
+        variant="outline"
         size="icon"
         disabled={disabled}
         className="shrink-0"
@@ -140,7 +141,11 @@ export default function ChatInput({ projectId, onSend, disabled }: Props) {
         title={webSearch ? t('chat.webSearchOn') : t('chat.webSearchOff')}
         aria-label={webSearch ? t('chat.webSearchOn') : t('chat.webSearchOff')}
         onClick={toggleWebSearch}
-        style={{ opacity: webSearch ? 1 : 0.55 }}
+        style={
+          webSearch
+            ? { background: 'var(--accent)', borderColor: 'var(--accent)', color: 'var(--bg)' }
+            : { borderColor: 'var(--text-dim)' }
+        }
       >
         <Globe />
       </Button>
